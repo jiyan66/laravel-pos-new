@@ -1,0 +1,17 @@
+/.env
+/.env.*
+!/.env.example
+/vendor
+/node_modules
+/.phpunit.cache
+/.phpunit.result.cache
+/database/*.sqlite
+/database/*.sqlite-*
+/storage/*.key
+/public/hot
+/public/storage
+/.idea
+/.vscode
+/build
+/*deploy*.zip
+/*Deploy*.zip
