@@ -21,6 +21,7 @@
         </div>
     </header>
     <main id="main-content" class="container">
+        @include('partials.feedback')
         @yield('content')
     </main>
     <footer class="site-footer container"><span>Mistica POS</span><span>&copy; {{ now()->year }} Joseph Gian Carlo Mistica</span></footer>

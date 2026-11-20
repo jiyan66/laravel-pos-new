@@ -1,11 +1,13 @@
 {
     "name": "mistica/laravel-pos",
     "type": "project",
-    "description": "IT0049 TFA6 database-backed Laravel POS account listings",
+    "description": "IT0049 TFA7 Laravel POS forms, validation, and prepared avatars",
     "license": "MIT",
     "require": {
         "php": "^8.3",
-        "laravel/framework": "^13.0"
+        "laravel/framework": "^13.0",
+        "ext-gd": "*",
+        "intervention/image": "^3.11"
     },
     "require-dev": {
         "mockery/mockery": "^1.6",

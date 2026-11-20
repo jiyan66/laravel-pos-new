@@ -87,3 +87,25 @@ dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
 .card-number { display:block; color:var(--blue); font-size:13px; font-weight:700; margin-bottom:22px; }
 .record-name { font-weight:600; min-width:200px; }
 @media(max-width:650px) { .dashboard-grid { grid-template-columns:1fr; } }
+
+/* TFA7 form and avatar additions */
+.notice { margin-bottom:24px; padding:16px 20px; border:1px solid; border-radius:9px; }
+.notice-success { background:#e9f7ef; color:#22573c; border-color:#b8deca; }
+.notice-error { background:#fff0f0; color:#872a2a; border-color:#edc3c3; }
+.notice ul { margin:8px 0 0; padding-left:22px; }
+.form-panel { max-width:760px; padding:30px; }
+.form-note,.field-help { color:var(--muted); font-size:13px; }
+.form-note { margin:0 0 24px; }
+.field { margin-bottom:24px; }
+.field label { display:block; font-size:14px; font-weight:600; margin-bottom:8px; }
+input { display:block; width:100%; min-height:46px; padding:10px 12px; border:1px solid #aebbc9; border-radius:7px; font:inherit; color:var(--ink); background:#fff; }
+input[aria-invalid="true"] { border-color:#b73131; }
+input[type="file"] { padding:10px; font-size:14px; }
+.field-error { color:#a22525; font-size:13px; margin:6px 0 0; }
+.field-help { margin:8px 0 0; }
+.form-actions { display:flex; gap:22px; align-items:center; margin-top:30px; }
+button.button { border:0; cursor:pointer; font-family:inherit; }
+.text-link { font-size:14px; font-weight:600; text-underline-offset:3px; }
+.avatar-thumb,.avatar-preview { display:block; object-fit:cover; border-radius:50%; background:#eaf0fd; }
+.avatar-preview { margin:10px 0 14px; }
+@media(max-width:420px) { .form-panel { padding:22px; } }
