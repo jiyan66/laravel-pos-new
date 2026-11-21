@@ -8,8 +8,7 @@ class CustomerRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Authentication is outside this classroom activity's scope.
-        return true;
+        return $this->user() !== null;
     }
 
     public function rules(): array

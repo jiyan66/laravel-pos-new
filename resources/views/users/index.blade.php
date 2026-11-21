@@ -9,7 +9,7 @@
         @else
             <div class="table-scroll" role="region" aria-label="User records" tabindex="0"><table><caption class="sr-only">User account records</caption><thead><tr><th scope="col">ID</th><th scope="col">Avatar</th><th scope="col">Username</th><th scope="col">Full name</th><th scope="col">Actions</th></tr></thead><tbody>
                 @foreach ($users as $user)
-                    <tr><td class="muted">{{ $user->id }}</td><td><img class="avatar-thumb" src="{{ $user->avatar_url }}" alt="{{ $user->full_name }} avatar" width="48" height="48" loading="lazy"></td><td>{{ $user->username }}</td><td class="record-name">{{ $user->full_name }}</td><td><a class="text-link" href="{{ route('users.edit', $user) }}" aria-label="Edit {{ $user->full_name }}">Edit</a></td></tr>
+                    <tr><td class="muted">{{ $user->id }}</td><td><img class="avatar-thumb" src="{{ $user->avatar_url }}" alt="{{ $user->full_name }} avatar" width="48" height="48" loading="lazy"></td><td>{{ $user->username }}</td><td class="record-name">{{ $user->full_name }}</td><td class="row-actions"><a class="text-link" href="{{ route('users.show', $user) }}">View</a><a class="text-link" href="{{ route('users.edit', $user) }}" aria-label="Edit {{ $user->full_name }}">Edit</a></td></tr>
                 @endforeach
             </tbody></table></div>
         @endif

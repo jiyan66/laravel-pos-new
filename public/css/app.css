@@ -109,3 +109,18 @@ button.button { border:0; cursor:pointer; font-family:inherit; }
 .avatar-thumb,.avatar-preview { display:block; object-fit:cover; border-radius:50%; background:#eaf0fd; }
 .avatar-preview { margin:10px 0 14px; }
 @media(max-width:420px) { .form-panel { padding:22px; } }
+
+/* TFA8 authentication navigation and resource details */
+.auth-links { display:flex; align-items:center; gap:14px; font-size:13px; flex-wrap:wrap; }
+.auth-links a { text-underline-offset:3px; }
+.signed-in { color:var(--muted); max-width:190px; overflow-wrap:anywhere; }
+.text-button { border:0; padding:0; font:inherit; text-decoration:underline; text-underline-offset:3px; background:transparent; color:var(--blue); cursor:pointer; }
+.row-actions { white-space:nowrap; }
+.row-actions a + a { margin-left:14px; }
+.delete-panel { border-top:1px solid var(--line); padding-top:22px; margin-top:30px; }
+.delete-panel summary { color:#982b2b; font-weight:600; cursor:pointer; }
+.delete-panel p { font-size:14px; }
+.button-danger { background:#a62d2d; }
+.button-danger:hover { background:#812222; }
+.header-inner { flex-wrap:wrap; padding-block:20px; }
+@media (max-width:760px) { .auth-links { width:100%; } }

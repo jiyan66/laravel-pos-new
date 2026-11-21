@@ -19,11 +19,12 @@ class PosFormsAndAvatarsTest extends TestCase
     {
         parent::setUp();
         Storage::fake('public');
+        $this->signInOperator();
     }
 
     private function makeUser(string $username = 'sample.user'): User
     {
-        return User::query()->create(['username' => $username, 'full_name' => 'Sample User']);
+        return User::query()->create(['username' => $username, 'full_name' => 'Sample User', 'email' => $username.'@example.com', 'password' => 'Testing123!']);
     }
 
     private function oldAvatar(User $user): string
@@ -85,9 +86,9 @@ class PosFormsAndAvatarsTest extends TestCase
 
     public function test_user_create_requires_name_and_username(): void
     {
-        $this->post('/users', [])->assertSessionHasErrors(['username', 'full_name']);
-        $this->assertDatabaseCount('users', 0);
-        $this->post('/users', ['username' => 'new.user', 'full_name' => 'New User'])
+        $this->post('/users', [])->assertSessionHasErrors(['username', 'full_name', 'email', 'password']);
+        $this->assertDatabaseCount('users', 1);
+        $this->post('/users', ['username' => 'new.user', 'full_name' => 'New User', 'email' => 'new@example.com', 'password' => 'Testing123!', 'password_confirmation' => 'Testing123!'])
             ->assertRedirect(route('users.index'))->assertSessionHas('success');
         $this->assertDatabaseHas('users', ['username' => 'new.user', 'full_name' => 'New User', 'avatar' => null]);
     }
@@ -95,15 +96,15 @@ class PosFormsAndAvatarsTest extends TestCase
     public function test_duplicate_username_is_rejected_and_old_name_is_kept(): void
     {
         $this->makeUser('taken');
-        $this->from('/users/create')->post('/users', ['username' => 'taken', 'full_name' => 'Keep This Name'])
+        $this->from('/users/create')->post('/users', ['username' => 'taken', 'full_name' => 'Keep This Name', 'email' => 'other@example.com', 'password' => 'Testing123!', 'password_confirmation' => 'Testing123!'])
             ->assertSessionHasErrors('username')->assertSessionHasInput('full_name', 'Keep This Name');
-        $this->assertDatabaseCount('users', 1);
+        $this->assertDatabaseCount('users', 2);
     }
 
     public function test_user_can_keep_their_own_username_on_update(): void
     {
         $user = $this->makeUser();
-        $this->put('/users/'.$user->id, ['username' => $user->username, 'full_name' => 'Updated Name'])
+        $this->put('/users/'.$user->id, ['username' => $user->username, 'email' => $user->email, 'full_name' => 'Updated Name'])
             ->assertRedirect(route('users.index'))->assertSessionHasNoErrors();
         $this->assertSame('Updated Name', $user->fresh()->full_name);
     }
@@ -112,7 +113,7 @@ class PosFormsAndAvatarsTest extends TestCase
     {
         $first = $this->makeUser('first');
         $second = $this->makeUser('second');
-        $this->put('/users/'.$first->id, ['id' => $second->id, 'username' => 'second', 'full_name' => 'Attempt'])
+        $this->put('/users/'.$first->id, ['id' => $second->id, 'username' => 'second', 'email' => $first->email, 'full_name' => 'Attempt'])
             ->assertSessionHasErrors('username');
         $this->assertSame('first', $first->fresh()->username);
     }
@@ -121,7 +122,7 @@ class PosFormsAndAvatarsTest extends TestCase
     {
         $user = $this->makeUser();
         $this->put('/users/'.$user->id, [
-            'username' => $user->username, 'full_name' => $user->full_name,
+            'username' => $user->username, 'email' => $user->email, 'full_name' => $user->full_name,
             'avatar' => UploadedFile::fake()->image('portrait.png', 600, 400),
         ])->assertRedirect(route('users.index'))->assertSessionHasNoErrors();
 
@@ -140,7 +141,7 @@ class PosFormsAndAvatarsTest extends TestCase
     {
         $user = $this->makeUser();
         $old = $this->oldAvatar($user);
-        $this->put('/users/'.$user->id, ['username' => $user->username, 'full_name' => 'Text Changed'])
+        $this->put('/users/'.$user->id, ['username' => $user->username, 'email' => $user->email, 'full_name' => 'Text Changed'])
             ->assertSessionHasNoErrors();
         $this->assertSame($old, $user->fresh()->avatar);
         Storage::disk('public')->assertExists($old);
@@ -151,7 +152,7 @@ class PosFormsAndAvatarsTest extends TestCase
         $user = $this->makeUser();
         $old = $this->oldAvatar($user);
         $this->put('/users/'.$user->id, [
-            'username' => $user->username, 'full_name' => 'New Picture',
+            'username' => $user->username, 'email' => $user->email, 'full_name' => 'New Picture',
             'avatar' => UploadedFile::fake()->image('replacement.jpg', 400, 400),
         ])->assertSessionHasNoErrors();
         $this->assertNotSame($old, $user->fresh()->avatar);
@@ -164,7 +165,7 @@ class PosFormsAndAvatarsTest extends TestCase
         $user = $this->makeUser();
         $old = $this->oldAvatar($user);
         $this->put('/users/'.$user->id, [
-            'username' => $user->username, 'full_name' => 'Must Not Save',
+            'username' => $user->username, 'email' => $user->email, 'full_name' => 'Must Not Save',
             'avatar' => UploadedFile::fake()->image('large.png', 50, 50)->size(2049),
         ])->assertSessionHasErrors('avatar');
         $this->assertSame('Sample User', $user->fresh()->full_name);
@@ -177,7 +178,7 @@ class PosFormsAndAvatarsTest extends TestCase
     {
         $user = $this->makeUser();
         foreach ([UploadedFile::fake()->create('document.pdf', 10, 'application/pdf'), UploadedFile::fake()->image('wide.png', 3001, 10)] as $file) {
-            $this->put('/users/'.$user->id, ['username' => $user->username, 'full_name' => $user->full_name, 'avatar' => $file])
+            $this->put('/users/'.$user->id, ['username' => $user->username, 'email' => $user->email, 'full_name' => $user->full_name, 'avatar' => $file])
                 ->assertSessionHasErrors('avatar');
         }
         $this->assertCount(0, Storage::disk('public')->allFiles());
@@ -188,22 +189,22 @@ class PosFormsAndAvatarsTest extends TestCase
         $user = $this->makeUser();
         $png = UploadedFile::fake()->image('source.png', 20, 20);
         $file = UploadedFile::fake()->createWithContent('picture.php', file_get_contents($png->getPathname()));
-        $this->put('/users/'.$user->id, ['username' => $user->username, 'full_name' => $user->full_name, 'avatar' => $file])
+        $this->put('/users/'.$user->id, ['username' => $user->username, 'email' => $user->email, 'full_name' => $user->full_name, 'avatar' => $file])
             ->assertSessionHasErrors('avatar');
         $this->assertCount(0, Storage::disk('public')->allFiles());
     }
 
     public function test_avatar_upload_is_on_edit_only(): void
     {
-        $this->post('/users', ['username' => 'new', 'full_name' => 'New User', 'avatar' => UploadedFile::fake()->image('photo.jpg')])
+        $this->post('/users', ['username' => 'new', 'full_name' => 'New User', 'email' => 'new@example.com', 'password' => 'Testing123!', 'password_confirmation' => 'Testing123!', 'avatar' => UploadedFile::fake()->image('photo.jpg')])
             ->assertSessionHasErrors('avatar');
-        $this->assertDatabaseCount('users', 0);
+        $this->assertDatabaseCount('users', 1);
     }
 
     public function test_a_browser_cannot_supply_an_arbitrary_avatar_path(): void
     {
         $user = $this->makeUser();
-        $this->put('/users/'.$user->id, ['username' => $user->username, 'full_name' => $user->full_name, 'avatar' => '../../.env'])
+        $this->put('/users/'.$user->id, ['username' => $user->username, 'email' => $user->email, 'full_name' => $user->full_name, 'avatar' => '../../.env'])
             ->assertSessionHasErrors('avatar');
         $this->assertNull($user->fresh()->avatar);
         $this->assertFalse(AvatarPath::isManaged('avatars/../../.env'));
@@ -244,7 +245,7 @@ class PosFormsAndAvatarsTest extends TestCase
 
         try {
             $this->put('/users/'.$user->id, [
-                'username' => $user->username, 'full_name' => 'Cannot Save',
+                'username' => $user->username, 'email' => $user->email, 'full_name' => 'Cannot Save',
                 'avatar' => UploadedFile::fake()->image('replacement.png', 300, 200),
             ]);
         } catch (\RuntimeException $exception) {

@@ -1,174 +1,94 @@
-# IT0049 TFA6 Laravel POS
+# Mistica POS — TFA8
 
-Database-backed customer and user account listings by Joseph Gian Carlo Mistica.
-This is the complete TFA6 source project. Complete and verify this version before
-applying the separate TFA7 update package.
+Laravel 13 POS account management, continued from TFA5–TFA7. Customer and user
+controllers use all seven resource actions. Laravel Breeze provides login,
+registration, logout and password handling. Authentication is required for
+customer/user management and avatar delivery; Home and About remain public.
 
-## What is included
+## Links for submission
 
-| Page | URL | Data source |
-| --- | --- | --- |
-| Home | / | Static Blade page |
-| About | /about | Static developer information |
-| Customer Accounts | /customers | Customer Eloquent model |
-| User Accounts | /users | User Eloquent model |
+- GitHub repository: **add the URL of this repository**
+- Hosted application: **add the actual working HTTPS URL after deployment**
 
-Migrations create the schema. Seeders insert five realistic sample customers and
-five users. The controllers query Eloquent; Blade loops over database objects.
-Seed arrays are only the input used to populate the database.
+These are submission fields, not working links. Complete them before submitting.
 
-The project follows the fields explicitly named in the TFA6 brief: customers
-have full_name, email, and phone; users have username and full_name. IDs and both
-Eloquent timestamps are included. Username is unique, and phone is nullable.
-String lengths are implementation choices because the complete referenced TFA2
-schema was not attached. User email and role fields from earlier static examples
-are not assumed to exist. There is no login, password, or deletion workflow in
-this activity.
+## Upgrade the working TFA7 project
 
-## Requirements
+Use the separate TFA8 update package's `START-HERE.md` and `APPLY-TFA8.ps1`.
+The installer runs the real Breeze scaffolder before applying the POS changes.
+Do not run Breeze's installer again in an already upgraded checkout: it would
+replace the customized registration, routes, views and tests.
 
-- PHP 8.3+ (the existing C:\php PHP 8.4 installation is suitable).
-- Composer 2 and Git.
-- Standard Laravel PHP extensions, including PDO, cURL, Mbstring, Fileinfo,
-  OpenSSL, DOM/XML, Ctype, Tokenizer, Session, Filter, Hash, and PCRE.
-- pdo_sqlite/sqlite3 for the default local SQLite database.
-- pdo_mysql for MySQL hosting. ZIP support helps Composer downloads.
+## Run a fresh checkout of the completed TFA8 repository
 
-No frontend build or Node.js installation is needed. CSS is already a public file.
-
-## Windows setup
-
-Extract so `artisan` is located at:
-
-```text
-C:\xampp\htdocs\laravel-pos-tfa6\artisan
-```
-
-Do not paste the project inside your existing POS or Tasks project. Open this
-new folder in VS Code and run:
+Requires PHP 8.3+ (the existing PHP 8.4 setup is suitable), Composer, GD,
+mbstring, fileinfo, OpenSSL, PDO and the selected database driver. The supplied
+tests also need PDO SQLite, DOM and XML. Use Node.js LTS 22.13+ or 24+ and npm
+for building the frontend. Do not upload `node_modules` to the host.
 
 ```powershell
 $env:Path = "C:\php;" + $env:Path
-powershell -NoProfile -ExecutionPolicy Bypass -File .\SETUP.ps1
+# Only if this is where you enabled GD:
+$env:PHP_INI_SCAN_DIR = "C:\php\conf.d"
+composer install
+Copy-Item .env.example .env
+php artisan key:generate
+New-Item -ItemType File -Path database/database.sqlite -Force
+php artisan migrate --seed
+npm.cmd ci
+npm.cmd run build
 powershell -NoProfile -ExecutionPolicy Bypass -File .\VERIFY.ps1
 php artisan serve
 ```
 
-Review the scripts before execution. ExecutionPolicy Bypass applies only to
-those script processes; it does not change your permanent policy. SETUP installs
-dependencies, creates .env and a SQLite file if missing, generates a missing key,
-and runs migrations and seeders. It does not run migrate:fresh or delete records.
+The `.env` copy/key creation and empty SQLite creation above are for a FRESH
+checkout only. Keep the original `.env`, key and database during an upgrade.
+Use MySQL settings instead of SQLite when that is your selected database.
+A completed source checkout must include `composer.lock`, `package-lock.json`,
+the generated Breeze source and `docs/BREEZE-INSTALLATION.json`.
 
-Open http://127.0.0.1:8000. If another Laravel server uses that port, stop it or
-run `php artisan serve --port=8001` and open http://127.0.0.1:8001 instead.
+Open http://127.0.0.1:8000/register. Register a **new** username and email,
+then use email/password on the login form. The five old seeded usernames are
+preserved and have no default password. Once signed in, edit an older user to
+assign its unique login email and initial password. Existing images remain.
 
-## Manual setup alternative
+## Behavior and scope
 
-In the project root:
-
-```powershell
-$env:Path = "C:\php;" + $env:Path
-Copy-Item .env.example .env
-New-Item -ItemType File database\database.sqlite
-composer install --prefer-dist
-php artisan key:generate
-php artisan optimize:clear
-php artisan migrate --seed
-composer test
-php artisan serve
-```
-
-Copy .env.example and create the database file only when they do not already
-exist. Do not overwrite a configured .env. Composer creates composer.lock on
-first install; commit that generated lock file to your repository.
-
-## Using local MySQL instead
-
-Create a NEW empty database named laravel_pos_tfa6 in XAMPP/phpMyAdmin. Start
-XAMPP's MySQL service. Edit these existing entries in .env, adding missing ones:
-
-```dotenv
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=laravel_pos_tfa6
-DB_USERNAME=root
-DB_PASSWORD=
-```
-
-Use your actual local credentials if different. Run:
-
-```powershell
-php artisan config:clear
-php artisan migrate --seed
-```
-
-Do not use your Tasks application's database or an existing unrelated POS
-schema. Re-seeding updates the known demo records without adding duplicates;
-it does not clear all users or customers.
+- `Route::resource('customers', CustomerController::class)` and the equivalent
+  users registration are inside the `auth` group. Each controller implements
+  index/create/store/show/edit/update/destroy.
+- Registration requires username, full name, unique lowercase email and a
+  confirmed password. Passwords are hashed; password/remember-token fields
+  are hidden from serialization and never displayed in forms.
+- Blank password edits retain the current hash. Changing your own password
+  requires your current password. The active account cannot delete itself.
+- TFA7 avatar validation, 256px JPEG preparation and file cleanup are retained.
+- All authenticated accounts have the same account-management permissions,
+  as requested by TFA8. Registration is open; no administrator role is added.
+- Breeze login throttling, session regeneration, logout and reset-token
+  handling are retained. Email verification is not enforced by this assignment.
+- The default mail transport is `log` for local development. Password reset
+  delivery requires working mail settings; no outgoing email service is supplied.
 
 ## Verification
 
-VERIFY.ps1 runs Composer manifest validation, PHP lint, Blade view compilation,
-and the eight baseline feature tests. Tests use an isolated in-memory SQLite
-database, not your local/hosted database.
+`VERIFY.ps1` checks dependencies, built assets, PHP/compiled Blade syntax,
+routes and the supplied feature tests. Tests force an isolated in-memory SQLite
+database; they do not use the live database. There are 57 application tests
+covering authentication, guest access, both resources and prior TFA6/TFA7 behavior.
+See `docs/TFA8-TEST-CHECKLIST.md` for the manual browser checks and review limits.
 
-The tests cover five records in each table, repeat seeding, all four pages,
-retrieval of newly inserted records, empty lists, escaped output, and unique
-usernames. The included GitHub Actions workflow runs the suite after you push.
-No CI result is claimed until your own repository runs it.
+## Deployment and submission
 
-PHP and Composer are not installed in the package-authoring environment. File,
-route, seed-data, and configuration consistency were checked there; PHP lint,
-Blade compilation, and PHPUnit execution must be performed on a PHP-equipped
-machine. Do not interpret the presence of tests as a claim that they passed.
-
-Manual checks: all four navigation links work, both listings contain at least
-five records, the About page identifies the developer, and the layout remains
-usable on a narrow screen.
-
-## Source layout
-
-| Location | Purpose |
-| --- | --- |
-| app/Models | Customer and User Eloquent models |
-| app/Http/Controllers | Page selection and database retrieval |
-| database/migrations | Customers/users table definitions |
-| database/seeders | Five customers and five users |
-| resources/views | Shared layout and four Blade views |
-| public/css/app.css | Responsive styles |
-| database/sql/tfa6-import.sql | MySQL schema and sample data for hosting |
-| docs/INFINITYFREE.md | Hosting instructions |
-
-## GitHub and submission
-
-Create an empty GitHub repository, then run:
-
-```powershell
- git init
- git add .
- git status
- git commit -m "Complete TFA6 Laravel POS with Eloquent"
- git branch -M main
- git remote add origin https://github.com/YOUR_USERNAME/laravel-pos-tfa6.git
- git push -u origin main
-```
-
-Replace the URL with your repository URL. Before committing, confirm .env,
-vendor, local SQLite files, logs, and compiled caches are excluded. Include the
-locally generated composer.lock, migrations, seeders, and SQL import.
-
-Add your actual repository URL and live website URL below before submission:
-
-- Repository: add your real URL.
-- Hosted application: add your real URL.
-
-For TFA7, preserve this folder/version and apply the update package to a copy.
-No TFA7 forms or avatar code is included in this TFA6 baseline.
+Follow `docs/TFA8-INFINITYFREE.md`; TFA8 needs built `public/build` assets.
+Keep migrations and seeders in Git. Do not commit `.env`, local SQLite files,
+backup folders, uploads, logs, vendor or node_modules. Commit BOTH dependency
+lock files after installation. Never put a real password in the README.
+Update the two submission links above after local and hosted verification.
 
 ## References
 
-- https://laravel.com/docs/13.x/migrations
-- https://laravel.com/docs/13.x/seeding
-- https://laravel.com/docs/13.x/eloquent
-- https://laravel.com/docs/13.x/blade
+- [Laravel resource controllers](https://laravel.com/docs/13.x/controllers#resource-controllers)
+- [Laravel route middleware](https://laravel.com/docs/13.x/routing#route-group-middleware)
+- [Laravel Breeze source and releases](https://github.com/laravel/breeze)
+- [Laravel starter kits](https://laravel.com/docs/13.x/starter-kits)

@@ -19,7 +19,7 @@ class AvatarController extends Controller
         return $disk->response($path, null, [
             'Content-Type' => 'image/jpeg',
             'X-Content-Type-Options' => 'nosniff',
-            'Cache-Control' => 'public, max-age=86400',
+            'Cache-Control' => 'private, no-store',
         ], 'inline');
     }
 }

@@ -18,11 +18,20 @@
                 <a href="{{ route('users.index') }}" @if(request()->routeIs('users.*')) aria-current="page" @endif>Users</a>
                 <a href="{{ route('about') }}" @if(request()->routeIs('about')) aria-current="page" @endif>About</a>
             </nav>
+            <div class="auth-links">
+                @auth
+                    <span class="signed-in">{{ auth()->user()->full_name }}</span>
+                    <form method="POST" action="{{ route('logout') }}">@csrf<button class="text-button" type="submit">Log out</button></form>
+                @else
+                    <a href="{{ route('login') }}">Log in</a><a href="{{ route('register') }}">Register</a>
+                @endauth
+            </div>
         </div>
     </header>
     <main id="main-content" class="container">
         @include('partials.feedback')
         @yield('content')
+        {{ $slot ?? '' }}
     </main>
     <footer class="site-footer container"><span>Mistica POS</span><span>&copy; {{ now()->year }} Joseph Gian Carlo Mistica</span></footer>
 </body>

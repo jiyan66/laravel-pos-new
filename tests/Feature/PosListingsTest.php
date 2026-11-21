@@ -36,6 +36,7 @@ class PosListingsTest extends TestCase
             'phone' => '09171234567',
         ]);
 
+        $this->signInOperator();
         $this->get('/customers')->assertOk()
             ->assertSee('A Database Customer')
             ->assertSee('database-only@example.com')
@@ -46,6 +47,7 @@ class PosListingsTest extends TestCase
     {
         User::query()->create(['username' => 'database.user', 'full_name' => 'Database User']);
 
+        $this->actingAs(User::query()->first());
         $this->get('/users')->assertOk()->assertSee('database.user')->assertSee('Database User');
     }
 
@@ -53,16 +55,17 @@ class PosListingsTest extends TestCase
     {
         $this->seed();
 
+        $this->actingAs(User::query()->first());
         $this->get('/customers')->assertOk()
             ->assertViewHas('customers', fn ($records) => $records->count() === 5);
         $this->get('/users')->assertOk()
             ->assertViewHas('users', fn ($records) => $records->count() === 5);
     }
 
-    public function test_empty_tables_have_readable_empty_states(): void
+    public function test_empty_customers_have_a_readable_empty_state(): void
     {
+        $this->signInOperator();
         $this->get('/customers')->assertOk()->assertSee('No customer records are available.');
-        $this->get('/users')->assertOk()->assertSee('No user records are available.');
     }
 
     public function test_database_text_is_html_escaped(): void
@@ -71,6 +74,7 @@ class PosListingsTest extends TestCase
         Customer::query()->create(['full_name' => $payload, 'email' => 'safe@example.com']);
         User::query()->create(['username' => 'escaped', 'full_name' => $payload]);
 
+        $this->actingAs(User::query()->first());
         foreach (['/customers', '/users'] as $url) {
             $this->get($url)->assertOk()->assertSee($payload)->assertDontSee($payload, false);
         }

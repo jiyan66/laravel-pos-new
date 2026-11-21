@@ -3,14 +3,30 @@
 namespace App\Models;
 
 use App\Support\AvatarPath;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
-class User extends Model
+class User extends Authenticatable
 {
-    // A browser-supplied avatar path must never be mass assigned.
-    protected $fillable = ['username', 'full_name'];
+    use Notifiable;
+
+    // Avatar paths are still assigned only by the server-side upload workflow.
+    protected $fillable = ['username', 'full_name', 'email', 'password'];
+
+    protected $hidden = ['password', 'remember_token'];
+
+    protected function casts(): array
+    {
+        return ['password' => 'hashed', 'email_verified_at' => 'datetime'];
+    }
+
+    // Compatibility for Breeze's default display-name references.
+    public function getNameAttribute(): string
+    {
+        return (string) $this->full_name;
+    }
 
     public function getAvatarUrlAttribute(): string
     {

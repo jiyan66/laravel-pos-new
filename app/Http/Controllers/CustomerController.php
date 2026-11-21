@@ -28,6 +28,11 @@ class CustomerController extends Controller
         return redirect()->route('customers.index')->with('success', 'Customer created successfully.');
     }
 
+    public function show(Customer $customer): View
+    {
+        return view('customers.show', compact('customer'));
+    }
+
     public function edit(Customer $customer): View
     {
         return view('customers.form', compact('customer'));
@@ -38,5 +43,12 @@ class CustomerController extends Controller
         $customer->update($request->validated());
 
         return redirect()->route('customers.index')->with('success', 'Customer updated successfully.');
+    }
+
+    public function destroy(Customer $customer): RedirectResponse
+    {
+        $customer->delete();
+
+        return redirect()->route('customers.index')->with('success', 'Customer deleted successfully.');
     }
 }

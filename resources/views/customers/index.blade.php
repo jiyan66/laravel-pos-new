@@ -9,7 +9,7 @@
         @else
             <div class="table-scroll" role="region" aria-label="Customer records" tabindex="0"><table><caption class="sr-only">Customer account records</caption><thead><tr><th scope="col">ID</th><th scope="col">Full name</th><th scope="col">Email</th><th scope="col">Phone</th><th scope="col">Actions</th></tr></thead><tbody>
                 @foreach ($customers as $customer)
-                    <tr><td class="muted">{{ $customer->id }}</td><td class="record-name">{{ $customer->full_name }}</td><td>{{ $customer->email }}</td><td>{{ $customer->phone ?? 'Not provided' }}</td><td><a class="text-link" href="{{ route('customers.edit', $customer) }}" aria-label="Edit {{ $customer->full_name }}">Edit</a></td></tr>
+                    <tr><td class="muted">{{ $customer->id }}</td><td class="record-name">{{ $customer->full_name }}</td><td>{{ $customer->email }}</td><td>{{ $customer->phone ?? 'Not provided' }}</td><td class="row-actions"><a class="text-link" href="{{ route('customers.show', $customer) }}">View</a><a class="text-link" href="{{ route('customers.edit', $customer) }}" aria-label="Edit {{ $customer->full_name }}">Edit</a></td></tr>
                 @endforeach
             </tbody></table></div>
         @endif
